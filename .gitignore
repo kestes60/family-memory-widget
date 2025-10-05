@@ -29,3 +29,5 @@ recordings/
 dist/
 build/
 
+*.txt
+dev_notes/

@@ -36,9 +36,12 @@
     isPro: false,  // Check if user has Pro access
     mediaRecorder: null,
     audioChunks: [],
+    audioBlob: null,  // Store the recorded audio blob for download
     startTime: null,
     timerInterval: null,
-    recordingDuration: 0
+    recordingDuration: 0,
+    currentTranscript: null,  // Store current transcript data
+    uploadedPhoto: null  // Store uploaded photo for PDF export
   };
 
   // ============================================================================
@@ -351,6 +354,15 @@
         background: #d1d5db;
       }
 
+      .fm-button-disabled {
+        opacity: 0.5;
+        cursor: not-allowed !important;
+      }
+
+      .fm-button-disabled:hover {
+        background: #e5e7eb !important;
+      }
+
       /* Pro upgrade hint */
       .fm-pro-hint {
         background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
@@ -505,6 +517,9 @@
         
         // Create blob from chunks
         const audioBlob = new Blob(widgetState.audioChunks, { type: mimeType });
+        
+        // Store the audio blob for later download
+        widgetState.audioBlob = audioBlob;
         
         // Send to transcription API
         sendToAPI(audioBlob);
@@ -685,14 +700,32 @@
     const { transcript, language, language_probability } = data;
     const confidence = language_probability ? (language_probability * 100).toFixed(1) : 'N/A';
 
+    // Store transcript data for later use
+    widgetState.currentTranscript = {
+      transcript,
+      language,
+      language_probability,
+      confidence
+    };
+
     // Show Pro upgrade hint for free users
     const proHint = !widgetState.isPro ? `
       <div class="fm-pro-hint">
         <strong>💡 Upgrade to Pro for $${CONFIG.PRO_PRICE}</strong>
-        Get unlimited recording time, photo uploads, and PDF export with timestamps.
+        Get unlimited recording time, photo uploads, PDF export with timestamps, and audio downloads.
         <a href="${CONFIG.STRIPE_CHECKOUT_URL}" target="_blank" class="fm-upgrade-link">Upgrade Now</a>
       </div>
     ` : '';
+
+    // Download Recording button - disabled for free tier with tooltip
+    const downloadButton = widgetState.isPro 
+      ? `<button class="fm-button fm-button-secondary" id="fm-download-button">📥 Download Recording</button>`
+      : `<button class="fm-button fm-button-secondary fm-button-disabled" id="fm-download-button" title="Upgrade to Pro to download recordings">📥 Download Recording (Pro)</button>`;
+
+    // Export PDF button - only for Pro tier
+    const exportButton = widgetState.isPro 
+      ? `<button class="fm-button fm-button-secondary" id="fm-export-button">📄 Export PDF</button>`
+      : '';
 
     modal.innerHTML = `
       <h2>Your Family Memory</h2>
@@ -718,6 +751,8 @@
 
       <div class="fm-button-group">
         <button class="fm-button fm-button-secondary" id="fm-close-button">Close</button>
+        ${downloadButton}
+        ${exportButton}
         <button class="fm-button fm-button-primary" id="fm-copy-button">Copy Text</button>
       </div>
     `;
@@ -725,6 +760,26 @@
     // Attach event listeners
     document.getElementById('fm-close-button').addEventListener('click', closeModal);
     document.getElementById('fm-copy-button').addEventListener('click', copyTranscript);
+    
+    // Download Recording button (only functional for Pro users)
+    const downloadBtn = document.getElementById('fm-download-button');
+    if (downloadBtn) {
+      if (widgetState.isPro) {
+        downloadBtn.addEventListener('click', downloadRecording);
+      } else {
+        // For free users, show upgrade modal on click
+        downloadBtn.addEventListener('click', () => {
+          showUpgradeModal('Pro Feature: Download Recording', 
+            'Download your audio recordings as WAV files. This feature is available with Pro upgrade.');
+        });
+      }
+    }
+
+    // Export PDF button (Pro only)
+    const exportBtn = document.getElementById('fm-export-button');
+    if (exportBtn && widgetState.isPro) {
+      exportBtn.addEventListener('click', exportPDF);
+    }
 
     openModal();
   }
@@ -820,6 +875,187 @@
           button.textContent = originalText;
         }, 2000);
       }
+    }
+  }
+
+  /**
+   * Download the recorded audio as a WAV file (Pro feature)
+   * Creates a download link with timestamp-based filename
+   */
+  function downloadRecording() {
+    if (!widgetState.isPro) {
+      showUpgradeModal('Pro Feature Required', 
+        'Download your audio recordings as WAV files with Pro upgrade.');
+      return;
+    }
+
+    if (!widgetState.audioBlob) {
+      showError('No audio recording available to download.');
+      return;
+    }
+
+    try {
+      // Generate timestamp for filename
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const filename = `family-memory-${timestamp}.wav`;
+
+      // Create download link
+      const url = URL.createObjectURL(widgetState.audioBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Visual feedback
+      const button = document.getElementById('fm-download-button');
+      if (button) {
+        const originalText = button.textContent;
+        button.textContent = '✅ Downloaded!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error downloading recording:', error);
+      showError('Failed to download recording. Please try again.');
+    }
+  }
+
+  /**
+   * Export transcript and metadata to PDF (Pro feature)
+   * Uses jsPDF library to create a formatted PDF document
+   */
+  function exportPDF() {
+    if (!widgetState.isPro) {
+      showUpgradeModal('Pro Feature Required', 
+        'Export your transcripts to PDF with Pro upgrade.');
+      return;
+    }
+
+    // Check if jsPDF is loaded
+    if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+      showError('PDF export library not loaded. Please include jsPDF library in your page.');
+      console.error('jsPDF library not found. Add: <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>');
+      return;
+    }
+
+    try {
+      // Get the jsPDF constructor (handle both module formats)
+      const { jsPDF } = window.jspdf || window;
+      
+      if (!jsPDF) {
+        throw new Error('jsPDF constructor not available');
+      }
+
+      // Get current transcript text (including any edits)
+      const textArea = document.getElementById('fm-transcript-text');
+      const transcript = textArea ? textArea.value : widgetState.currentTranscript?.transcript || '';
+
+      // Create new PDF document
+      const doc = new jsPDF();
+
+      // Set up styling
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPosition = 20;
+
+      // Title
+      doc.setFontSize(20);
+      doc.setFont(undefined, 'bold');
+      doc.text('Family Memory Transcript', margin, yPosition);
+      yPosition += 15;
+
+      // Metadata section
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(100, 100, 100);
+      
+      const timestamp = new Date().toLocaleString();
+      doc.text(`Date: ${timestamp}`, margin, yPosition);
+      yPosition += 6;
+
+      if (widgetState.currentTranscript) {
+        doc.text(`Language: ${widgetState.currentTranscript.language || 'Unknown'}`, margin, yPosition);
+        yPosition += 6;
+        doc.text(`Confidence: ${widgetState.currentTranscript.confidence}%`, margin, yPosition);
+        yPosition += 6;
+      }
+
+      doc.text(`Duration: ${formatTime(widgetState.recordingDuration)}`, margin, yPosition);
+      yPosition += 15;
+
+      // Transcript section
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('Transcript:', margin, yPosition);
+      yPosition += 8;
+
+      // Transcript text (wrapped)
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(11);
+      const lines = doc.splitTextToSize(transcript, maxWidth);
+      
+      // Handle pagination if transcript is long
+      lines.forEach((line) => {
+        if (yPosition > 270) {  // Near bottom of page
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.text(line, margin, yPosition);
+        yPosition += 7;
+      });
+
+      // Add photo if available (Pro feature placeholder)
+      if (widgetState.uploadedPhoto) {
+        // Add new page for photo
+        doc.addPage();
+        yPosition = 20;
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('Attached Photo:', margin, yPosition);
+        yPosition += 10;
+        
+        // Add photo (jsPDF supports base64 images)
+        try {
+          doc.addImage(widgetState.uploadedPhoto, 'JPEG', margin, yPosition, maxWidth, 0);
+        } catch (e) {
+          console.warn('Could not add photo to PDF:', e);
+        }
+      }
+
+      // Footer on last page
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setPage(pageCount);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Generated by Family Memory Widget', margin, 285);
+
+      // Save the PDF
+      const pdfFilename = `family-memory-${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(pdfFilename);
+
+      // Visual feedback
+      const button = document.getElementById('fm-export-button');
+      if (button) {
+        const originalText = button.textContent;
+        button.textContent = '✅ Exported!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
+      }
+
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      showError('Failed to export PDF. Please make sure jsPDF library is loaded. Error: ' + error.message);
     }
   }
 

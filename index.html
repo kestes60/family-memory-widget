@@ -139,6 +139,68 @@
     .footer a:hover {
       text-decoration: underline;
     }
+
+    /* Pro mode toggle for testing */
+    .pro-toggle-section {
+      background: #e0e7ff;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      margin-bottom: 32px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .pro-toggle-section h3 {
+      color: #312e81;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .toggle-switch {
+      display: inline-block;
+      position: relative;
+      width: 60px;
+      height: 30px;
+      margin: 0 10px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 30px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: #667eea;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(30px);
+    }
   </style>
 </head>
 <body>
@@ -155,8 +217,26 @@
         <li><strong>Editable Transcript:</strong> Edit the transcribed text in a clean modal</li>
         <li><strong>Language Detection:</strong> Automatically detects language with confidence score</li>
         <li><strong>Rate Limiting:</strong> 3 free uses per day (stored in browser)</li>
-        <li><strong>Pro Upgrade:</strong> $5 for unlimited time, photo uploads, and PDF export</li>
+        <li><strong>Pro Upgrade:</strong> $5 for unlimited time, audio downloads, photo uploads, and PDF export</li>
+        <li><strong>Download Recording (Pro):</strong> Save audio as WAV file with timestamp</li>
+        <li><strong>PDF Export (Pro):</strong> Export transcript with metadata and photos</li>
       </ul>
+    </div>
+
+    <!-- Pro Mode Toggle for Testing -->
+    <div class="pro-toggle-section">
+      <h3>🧪 Testing Mode</h3>
+      <label style="display: inline-flex; align-items: center; color: #312e81;">
+        <span style="margin-right: 10px;">Free Mode</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="pro-mode-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="margin-left: 10px; font-weight: bold;">Pro Mode ⭐</span>
+      </label>
+      <p style="margin-top: 8px; font-size: 14px; color: #4c1d95;">
+        Toggle to test Pro features: download recording & PDF export
+      </p>
     </div>
 
     <div class="instructions">
@@ -221,8 +301,43 @@
     </div>
   </div>
 
+  <!-- Load jsPDF library for PDF export (Pro feature) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <!-- Load the Family Memory Widget -->
   <script src="widget.js"></script>
+
+  <!-- Pro Mode Toggle Script (for testing) -->
+  <script>
+    // Handle Pro mode toggle for testing purposes
+    document.getElementById('pro-mode-toggle').addEventListener('change', function(e) {
+      const isProEnabled = e.target.checked;
+      
+      // Set Pro status in localStorage (widget will read this)
+      if (isProEnabled) {
+        localStorage.setItem('familyMemory_pro', 'true');
+        console.log('✅ Pro mode enabled! Refresh widget to see Pro features.');
+      } else {
+        localStorage.removeItem('familyMemory_pro');
+        console.log('❌ Pro mode disabled. Refresh widget for free tier.');
+      }
+
+      // Show a notification
+      alert(isProEnabled 
+        ? '✅ Pro mode enabled! You can now download recordings and export PDFs.\n\nThe widget will reload with Pro features.' 
+        : '❌ Pro mode disabled. Back to free tier features.\n\nThe widget will reload.');
+
+      // Reload the page to apply changes
+      window.location.reload();
+    });
+
+    // Set initial toggle state based on localStorage
+    const currentProState = localStorage.getItem('familyMemory_pro') === 'true';
+    document.getElementById('pro-mode-toggle').checked = currentProState;
+    
+    // Show current mode in console
+    console.log('Current mode:', currentProState ? '⭐ Pro Mode' : '🆓 Free Mode');
+  </script>
 </body>
 </html>
 

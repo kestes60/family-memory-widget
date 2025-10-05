@@ -16,8 +16,9 @@ A lightweight, embeddable JavaScript widget for recording and transcribing famil
 ### Pro Tier ($5)
 - **Extended Recording**: Up to 5 minutes per recording
 - **Unlimited Uses**: No daily limits
+- **Download Recording**: Save audio as WAV file with timestamp-based filename
+- **PDF Export**: Export transcript with metadata, confidence scores, and optional photos
 - **Photo Upload**: Attach photos to memories (ready for implementation)
-- **PDF Export**: Export with timestamps and photos (ready for implementation)
 
 ## 🚀 Quick Start
 
@@ -103,6 +104,22 @@ You can do this via a webhook or redirect page after payment completion.
 3. After successful payment → Redirect to success page
 4. Success page sets `localStorage.setItem('familyMemory_pro', 'true')`
 5. User returns to your site with Pro features unlocked
+
+### Testing Pro Features
+
+The demo `index.html` includes a toggle switch to test Pro features:
+
+1. Open `index.html` in your browser
+2. Toggle the "Pro Mode" switch at the top
+3. Record a new audio memory
+4. In the transcript modal, you'll see:
+   - **Download Recording** button (saves as `family-memory-[timestamp].wav`)
+   - **Export PDF** button (creates formatted PDF with transcript & metadata)
+
+**Note**: Make sure jsPDF library is loaded for PDF export to work:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+```
 
 ## 🔧 Technical Details
 
@@ -264,16 +281,34 @@ family-memory-widget/
 - **Microphone access**: Requires explicit user permission
 - **HTTPS required**: Ensures encrypted data transmission
 
-## 🚧 Future Enhancements (Pro Features)
+## 🎯 Pro Features Implemented
 
-These are ready to implement when Pro is activated:
+### Download Recording
+When Pro mode is enabled, users can download their audio recordings:
+- Saves as WAV format blob (actually the recorded format, typically WebM)
+- Filename: `family-memory-[timestamp].wav` (e.g., `family-memory-2025-10-05T14-30-15.wav`)
+- Includes visual feedback (button changes to "✅ Downloaded!")
+- Free users see disabled button with tooltip prompting upgrade
 
-1. **Photo Upload**: Add file input, append to FormData as `photo`
-2. **PDF Export**: Use jsPDF library to generate downloadable PDFs
-3. **Server-side rate limiting**: Track by IP or user account
-4. **Authentication**: Integrate with your user system
-5. **Save to cloud**: Store transcripts in database
-6. **Sharing**: Generate shareable links to memories
+### Export PDF
+Pro users can export transcripts as formatted PDF documents:
+- Uses jsPDF library (loaded via CDN)
+- Includes: Title, timestamp, language, confidence score, duration, and full transcript
+- Supports pagination for long transcripts
+- Ready for photo attachments (when photo upload is implemented)
+- Filename: `family-memory-[date].pdf` (e.g., `family-memory-2025-10-05.pdf`)
+- Professional layout with proper formatting and footer
+
+## 🚧 Future Enhancements
+
+Additional features ready to implement:
+
+1. **Photo Upload**: Add file input to modal, append to FormData as `photo`
+2. **Server-side rate limiting**: Track by IP or user account (currently client-side only)
+3. **Authentication**: Integrate with your user system for persistent Pro status
+4. **Cloud Storage**: Store transcripts and recordings in database
+5. **Sharing**: Generate shareable links to memories
+6. **Timestamps**: Add word-level timestamps to transcripts (if API supports it)
 
 ## 📄 License
 

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Memory Widget - Demo</title>
+  <style>
+    /* Demo page styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .demo-container {
+      background: white;
+      border-radius: 16px;
+      padding: 48px;
+      max-width: 800px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #1f2937;
+      font-size: 36px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .feature-list {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .feature-list h2 {
+      color: #1f2937;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .feature-list ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      padding: 8px 0;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    .feature-list li:before {
+      content: "✓ ";
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .widget-demo {
+      text-align: center;
+      padding: 40px;
+      background: #f9fafb;
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+
+    .widget-demo h3 {
+      color: #1f2937;
+      font-size: 18px;
+      margin-bottom: 24px;
+    }
+
+    .instructions {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 16px;
+      margin-bottom: 32px;
+      border-radius: 4px;
+    }
+
+    .instructions h3 {
+      color: #78350f;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .instructions p {
+      color: #78350f;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .code-block {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin-bottom: 32px;
+    }
+
+    .code-block code {
+      display: block;
+      white-space: pre;
+    }
+
+    .footer {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>🎙️ Family Memory Widget</h1>
+    <p class="subtitle">Record and transcribe family memories for your genealogy website</p>
+
+    <div class="feature-list">
+      <h2>Features</h2>
+      <ul>
+        <li><strong>Easy Recording:</strong> Click the mic button to start recording (up to 2 minutes free)</li>
+        <li><strong>Automatic Transcription:</strong> Powered by Faster Whisper API on Railway</li>
+        <li><strong>Visual Feedback:</strong> Progress bar shows time remaining during recording</li>
+        <li><strong>Editable Transcript:</strong> Edit the transcribed text in a clean modal</li>
+        <li><strong>Language Detection:</strong> Automatically detects language with confidence score</li>
+        <li><strong>Rate Limiting:</strong> 3 free uses per day (stored in browser)</li>
+        <li><strong>Pro Upgrade:</strong> $5 for unlimited time, photo uploads, and PDF export</li>
+      </ul>
+    </div>
+
+    <div class="instructions">
+      <h3>📋 How to Use</h3>
+      <p>
+        1. Click the microphone button below to start recording<br>
+        2. Speak your family memory (up to 2 minutes for free users)<br>
+        3. Click again to stop, or it will auto-stop at the time limit<br>
+        4. Wait for transcription to complete<br>
+        5. Edit the transcript if needed and copy or share it
+      </p>
+    </div>
+
+    <!-- Widget Demo Area -->
+    <div class="widget-demo">
+      <h3>Try it out!</h3>
+      
+      <!-- This is where the widget will appear -->
+      <div class="family-memory-widget"></div>
+    </div>
+
+    <!-- Embed Instructions -->
+    <div class="feature-list">
+      <h2>🚀 How to Embed on Your Site</h2>
+      <p style="margin-bottom: 16px; color: #4b5563;">
+        Simply add this code to any page where you want the recording widget to appear:
+      </p>
+    </div>
+
+    <div class="code-block"><code>&lt;!-- Add this div where you want the widget to appear --&gt;
+&lt;div class="family-memory-widget"&gt;&lt;/div&gt;
+
+&lt;!-- Add this script tag before closing &lt;/body&gt; tag --&gt;
+&lt;script src="widget.js"&gt;&lt;/script&gt;</code></div>
+
+    <div class="feature-list">
+      <h2>⚙️ Configuration</h2>
+      <p style="margin-bottom: 16px; color: #4b5563;">
+        The widget works out of the box with sensible defaults. To customize:
+      </p>
+      <ul style="list-style: decimal; padding-left: 24px;">
+        <li style="margin-bottom: 8px;">
+          <strong>API Endpoint:</strong> Edit <code>CONFIG.API_URL</code> in widget.js
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong>Time Limits:</strong> Adjust <code>FREE_TIME_LIMIT</code> and <code>PRO_TIME_LIMIT</code>
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong>Rate Limiting:</strong> Change <code>FREE_DAILY_LIMIT</code> (default: 3 per day)
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong>Stripe Link:</strong> Update <code>STRIPE_CHECKOUT_URL</code> with your payment link
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong>Pro Access:</strong> Set <code>localStorage.setItem('familyMemory_pro', 'true')</code> after payment
+        </li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>Built with ❤️ for genealogy enthusiasts | Vanilla JavaScript | No dependencies</p>
+    </div>
+  </div>
+
+  <!-- Load the Family Memory Widget -->
+  <script src="widget.js"></script>
+</body>
+</html>
+

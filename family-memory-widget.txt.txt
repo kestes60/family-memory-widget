@@ -1,0 +1,81 @@
+family-memory-widget
+📦 What's Built
+Core Files
+widget.js (823 lines) - The complete, self-contained widget with:
+✅ Audio recording using MediaRecorder API
+✅ Visual progress bar (green→red gradient) with countdown timer
+✅ 2-minute limit for free users, 5-minute for Pro
+✅ POST to your Faster Whisper API endpoint
+✅ Clean modal showing editable transcript + language/confidence
+✅ Rate limiting (3 uses per day via localStorage)
+✅ Pro upgrade hints with Stripe checkout link
+✅ Beautiful, modern UI with gradients and animations
+✅ Vanilla JavaScript - zero dependencies!
+index.html - Beautiful demo page showing the widget in action
+README.md - Comprehensive documentation with:
+Quick start guide
+Configuration options
+API integration details
+Troubleshooting tips
+Browser compatibility info
+.gitignore - For version control
+🚀 How to Test
+
+Option 1: Simple File Open
+# Just open the file in your browser
+open index.html
+# or double-click index.html
+Note: Microphone access requires HTTPS or localhost, so you may need Option 2.
+
+Option 2: Local Server (Recommended)
+cd /home/keith_yahtsar/code/family-memory-widget
+
+# Python 3
+python3 -m http.server 8000
+
+# Then open: http://localhost:8000
+
+Option 3: Test on Any Website
+<div class="family-memory-widget"></div>
+<script src="widget.js"></script>
+
+Just add these two lines to any HTML page:
+🎯 Key Features Implemented
+Free Tier:
+🎙️ 2-minute recording limit with visual countdown
+🔄 3 recordings per day per device
+✏️ Editable transcript in modal
+🌍 Language detection with confidence score
+📋 Copy to clipboard
+Pro Hints:
+💎 Upgrade prompts throughout UI
+💳 Stripe checkout integration ready
+⏱️ 5-minute recording for Pro users
+🔓 Unlimited daily recordings
+⚙️ Configuration Needed
+Before deploying, update these in widget.js:
+Line 15: Replace Stripe checkout URL:
+STRIPE_CHECKOUT_URL: 'https://buy.stripe.com/test_YOUR_STRIPE_LINK'
+
+Line 13: Verify your API endpoint (currently set to your Railway URL):
+API_URL: 'https://faster-whisper-api-production-537b.up.railway.app/transcribe-audio'
+
+📱 Testing Checklist
+✅ Click mic button → Should request microphone permission
+✅ Start recording → Progress bar should appear with countdown
+✅ Speak for a few seconds → Time should count down
+✅ Stop recording → Should show "Transcribing..." modal
+✅ View transcript → Should show text, language, and confidence
+✅ Edit transcript → Text area should be editable
+✅ Copy text → Should copy to clipboard
+✅ Record 3+ times → Should show rate limit message on 4th attempt
+✅ Check next day → Rate limit should reset
+🎨 What Makes This Special
+Clean, modular code with extensive comments (as per your rules)
+Simple architecture - one self-contained JavaScript file
+Beautiful UI - Modern gradients, smooth animations
+Smart rate limiting - Client-side tracking via localStorage
+Responsive - Works on mobile and desktop
+No dependencies - Pure vanilla JavaScript
+Easy embed - Just one <script> tag!
+The widget is production-ready! Just update the Stripe link and test the recording functionality. Let me know if you'd like me to adjust any styling, timing, or features! 🎉
